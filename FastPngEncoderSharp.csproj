@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+
+  <PropertyGroup Label="Nuget">
+    <IsPackable>true</IsPackable>
+    <Title>Fast encoding library for SixLabors.ImageSharp images to png files</Title>
+    <Description>A C# wrapper of linpng for quick encoding of png files from SixLabors.ImageSharp</Description>
+    <PackageId>FastPngEncoderSharp</PackageId>
+    <PackageTags>image png encode</PackageTags>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <RepositoryCommit>%COMMIT%</RepositoryCommit>
+    <Authors>DCNick3</Authors>
+    <Owners>DCNick3</Owners>
+    <IncludeBuildOutput>true</IncludeBuildOutput>
+    <Version>1.0.0-beta</Version>
+  </PropertyGroup>
+
+
+  <ItemGroup Condition="$(TargetFrameworkVersion) == 'v2.0'">
+    <PackageReference Include="System.Memory" Version="4.5.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="runtimes\**\*">
+      <Pack>true</Pack>
+      <PackagePath>runtimes</PackagePath>
+    </None>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="LICENSE.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+
+</Project>
