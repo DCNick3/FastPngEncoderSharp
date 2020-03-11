@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.Primitives;
 
 // ReSharper disable InconsistentNaming
 
@@ -12,8 +13,19 @@ namespace FastPngEncoderSharp
 {
     public class FastPngEncoder
     {
-
-        public static unsafe void WritePngToFile<T>(string filename, Image<T> image) where T : unmanaged, IPixel<T>
+        public static void WritePngToFile<T>(string filename, Image<T> image, (int, int) size) where T : unmanaged, IPixel<T>
+        {
+            WritePngToFile(filename, image, new Rectangle(0, 0, size.Item1, size.Item2));
+        }
+        
+        
+        public static void WritePngToFile<T>(string filename, Image<T> image) where T : unmanaged, IPixel<T>
+        {
+            WritePngToFile(filename, image, new Rectangle(0, 0, image.Width, image.Height));
+        }
+        
+        public static unsafe void WritePngToFile<T>(string filename, Image<T> image,
+            Rectangle region) where T : unmanaged, IPixel<T>
         {
             ColorType colorType;
             uint bitWidth;
@@ -40,17 +52,20 @@ namespace FastPngEncoderSharp
                 default:
                     throw new NotImplementedException("The pixel format is not implemented");
             }
-
-            if (!typeof(Rgba32).IsAssignableFrom(typeof(T))) 
-                throw new NotImplementedException();
             
             sbyte* errorMessage = null;
             int result;
-            fixed (void* data = image.GetPixelSpan())
+            fixed (byte* data = MemoryMarshal.Cast<T, byte>(image.GetPixelSpan()))
             {
-                result = PngInteropHelper.write_png_to_file(filename, (uint) image.Width, (uint) image.Height, bitWidth,
-                    colorType, InterlaceType.None, CompressionType.Default, FilterType.Default, TransformType.Identity,
-                    (byte*) data, (uint)(image.Width * sizeof(T)), &errorMessage);
+                var rows = stackalloc byte*[region.Height];
+
+                for (var j = 0; j < region.Height; j++)
+                    rows[j] = data + sizeof(T) * (region.X + (region.Y + j) * image.Width);
+
+                result = PngInteropHelper.write_png_to_file(filename, 
+                    rows, (uint) region.Width, (uint) region.Height, bitWidth,
+                    colorType, InterlaceType.None, CompressionType.Default, FilterType.Default, TransformType.Identity, 
+                    (uint)(image.Width * sizeof(T)), &errorMessage);
             }
 
             var errorMessageString = errorMessage == null ? null : new string(errorMessage);
@@ -70,8 +85,6 @@ namespace FastPngEncoderSharp
                 default:
                     throw new Exception("Unknown error");
             }
-
-            throw new NotImplementedException();
         }
         
         public static unsafe class PngInteropHelper
@@ -79,10 +92,11 @@ namespace FastPngEncoderSharp
             private const string LibraryName = "png_interop_helper";
 
             [DllImport(LibraryName)]
-            public static extern int write_png_to_file(string filename, uint width, uint height, uint bit_width,
+            public static extern int write_png_to_file(string filename, 
+                byte** rows, uint width, uint height, uint bit_width,
                 ColorType color_type, InterlaceType interlace_type, CompressionType compression_type,
                 FilterType filter_type, TransformType transform_type,
-                byte* image_data, uint row_size, sbyte** perror_message);
+                uint row_size, sbyte** perror_message);
         }
     }
 }

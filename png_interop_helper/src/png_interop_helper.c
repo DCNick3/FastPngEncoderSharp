@@ -17,14 +17,14 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg)
     longjmp(png_jmpbuf(png_ptr), 1);
 }
 
-int32_t write_png_to_file(char* filename, uint32_t width, uint32_t height, uint32_t bit_width, uint32_t color_type, uint32_t interlace_type, uint32_t compression_type, uint32_t filter_type, uint32_t transform_type, uint8_t* image_data, uint32_t row_size, const char** perror_message)
+int32_t write_png_to_file(char* filename, uint8_t** rows, uint32_t width, uint32_t height, uint32_t bit_width, uint32_t color_type, uint32_t interlace_type, uint32_t compression_type, uint32_t filter_type, uint32_t transform_type, uint8_t* image_data, uint32_t row_size, const char** perror_message)
 {
     FILE *fp = fopen(filename, "wb");
     if (fp == NULL)
     {
         *perror_message = strerror(errno);
         return -1;
-    }    
+    }
 
     png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, perror_message, user_warning_fn, user_error_fn);
     if (png_ptr == NULL)
@@ -51,23 +51,23 @@ int32_t write_png_to_file(char* filename, uint32_t width, uint32_t height, uint3
 
     png_init_io(png_ptr, fp);
 
-    uint8_t** rows = malloc(sizeof(uint8_t*) * height);
-    if (rows == NULL)
-    {
-        png_destroy_write_struct(&png_ptr, &info_ptr);
-        fclose(fp);
-        return -5;
-    }
+    //uint8_t** rows = malloc(sizeof(uint8_t*) * height);
+    //if (rows == NULL)
+    //{
+    //    png_destroy_write_struct(&png_ptr, &info_ptr);
+    //    fclose(fp);
+    //    return -5;
+    //}
 
-    for (int i = 0; i < height; i++)
-        rows[i] = image_data + row_size * i;
+    //for (int i = 0; i < height; i++)
+    //    rows[i] = image_data + stride * (i + offset_y) + offset_x;
 
     png_set_IHDR(png_ptr, info_ptr, width, height, bit_width, color_type, interlace_type, compression_type, filter_type);
     png_set_rows(png_ptr, info_ptr, rows);
     png_write_png(png_ptr, info_ptr, transform_type, NULL);
 
     png_destroy_write_struct(&png_ptr, &info_ptr);
-    free(rows);
+    //free(rows);
     fclose(fp);
 
     return 0;
