@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.IO;
 using System.Runtime.InteropServices;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
 using SixLabors.Primitives;
 
 // ReSharper disable InconsistentNaming
@@ -23,8 +23,8 @@ namespace FastPngEncoderSharp
         {
             WritePngToFile(filename, image, new Rectangle(0, 0, image.Width, image.Height));
         }
-        
-        public static unsafe void WritePngToFile<T>(string filename, Image<T> image,
+
+        private static unsafe void WritePngToFileNative<T>(string filename, Image<T> image,
             Rectangle region) where T : unmanaged, IPixel<T>
         {
             ColorType colorType;
@@ -87,9 +87,37 @@ namespace FastPngEncoderSharp
             }
         }
         
+        public static void WritePngToFile<T>(string filename, Image<T> image,
+            Rectangle region) where T : unmanaged, IPixel<T>
+        {
+            if (PngInteropHelper.IsAvailable)
+                WritePngToFileNative(filename, image, region);
+            else
+            {
+                if (image.Bounds() != region) 
+                    image.Mutate(o => o.Crop(region));
+                using (var fileStream = File.Create(filename))
+                    image.SaveAsPng(fileStream);
+            }
+        }
+        
         public static unsafe class PngInteropHelper
         {
             private const string LibraryName = "png_interop_helper";
+            public static readonly bool IsAvailable; 
+            
+            static PngInteropHelper()
+            {
+                try
+                {
+                    Marshal.PrelinkAll(typeof (PngInteropHelper));
+                    IsAvailable = true;
+                }
+                catch (DllNotFoundException)
+                {
+                    IsAvailable = false;
+                }
+            }
 
             [DllImport(LibraryName)]
             public static extern int write_png_to_file(string filename, 
