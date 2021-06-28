@@ -30,6 +30,9 @@ namespace FastPngEncoderSharp
             ColorType colorType;
             uint bitWidth;
             
+            if (!new Rectangle(Point.Empty, image.Size()).Contains(region))
+                throw new ArgumentException("Region should be smaller than the source bounds.", nameof(region));
+
             T test = default;
             switch (test)
             {
