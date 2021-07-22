@@ -2,10 +2,8 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using SixLabors.Primitives;
 
 // ReSharper disable InconsistentNaming
 
@@ -44,11 +42,11 @@ namespace FastPngEncoderSharp
                     bitWidth = 8;
                     colorType = ColorType.Rgb;
                     break;
-                case Gray8 _:
+                case L8 _:
                     bitWidth = 8;
                     colorType = ColorType.Gray;
                     break;
-                case Gray16 _:
+                case L16 _:
                     bitWidth = 16;
                     colorType = ColorType.Gray;
                     break;
@@ -58,7 +56,11 @@ namespace FastPngEncoderSharp
             
             sbyte* errorMessage = null;
             int result;
-            fixed (byte* data = MemoryMarshal.Cast<T, byte>(image.GetPixelSpan()))
+            if (!image.TryGetSinglePixelSpan(out var singlePixelSpan))
+                throw new NotSupportedException(
+                    "To use the image with FastPngEncoderSharp the backing buffer must be continuous");
+            
+            fixed (byte* data = MemoryMarshal.Cast<T, byte>(singlePixelSpan))
             {
                 var rows = stackalloc byte*[region.Height];
 

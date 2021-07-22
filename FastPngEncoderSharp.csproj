@@ -18,15 +18,11 @@
     <Authors>DCNick3</Authors>
     <Owners>DCNick3</Owners>
     <IncludeBuildOutput>true</IncludeBuildOutput>
-    <Version>1.0.3-beta</Version>
+    <Version>1.1.0</Version>
   </PropertyGroup>
-
-
-  <ItemGroup Condition="$(TargetFrameworkVersion) == 'v2.0'">
-    <PackageReference Include="System.Memory" Version="4.5.3" />
-  </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+    <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
   
   <ItemGroup>
