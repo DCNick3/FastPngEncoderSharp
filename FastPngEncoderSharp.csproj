@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -18,10 +18,10 @@
     <Authors>DCNick3</Authors>
     <Owners>DCNick3</Owners>
     <IncludeBuildOutput>true</IncludeBuildOutput>
-    <Version>1.1.0</Version>
+    <Version>2.0.1</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.6" />
     <PackageReference Include="System.Memory" Version="4.5.4" />
   </ItemGroup>
   
